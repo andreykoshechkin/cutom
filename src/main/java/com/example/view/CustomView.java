@@ -2,6 +2,7 @@ package com.example.view;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.grid.FooterRow;
@@ -18,9 +19,13 @@ import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.Route;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.swing.text.html.HTMLDocument;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -30,15 +35,14 @@ public class CustomView extends VerticalLayout {
     private Grid<User> userGrid;
     private Grid<ConditionAction> conditionActionGrid;
 
-
     public CustomView() {
         VerticalLayout layout = new VerticalLayout();
 
         userGrid = new Grid<>();
-        userGrid.addColumn(User::getName).setHeader("Name");
-        userGrid.addColumn(User::getAge).setHeader("Age");
+        userGrid.addColumn(User::getName).setHeader("Имя");
+        userGrid.addColumn(User::getAge).setHeader("Возраст");
 
-        // Create a column for checkboxes
+        // Создание колонки с чекбоксами
         userGrid.addComponentColumn(user -> {
             Checkbox checkbox = new Checkbox();
             checkbox.addValueChangeListener(event -> {
@@ -49,10 +53,9 @@ public class CustomView extends VerticalLayout {
                 }
             });
             return checkbox;
-        }).setHeader("Show Conditions");
+        }).setHeader("Показать условия");
 
         userGrid.setItems(getUsers());
-
 
         Component conditionGrid = getConditionGrid();
         layout.add(userGrid, conditionGrid);
@@ -60,12 +63,11 @@ public class CustomView extends VerticalLayout {
     }
 
     private Component getConditionGrid() {
-
         VerticalLayout conditionComponent = new VerticalLayout();
 
         conditionActionGrid = new Grid<>();
-        conditionActionGrid.addColumn(ConditionAction::getDescription).setHeader("Description");
-        conditionActionGrid.addColumn(data -> String.valueOf(new Label())).setHeader("Result");
+        conditionActionGrid.addColumn(ConditionAction::getDescription).setHeader("Описание");
+        conditionActionGrid.addComponentColumn(ConditionAction::getHtml).setHeader("Результат");
 
         Button button = new Button("Выполнить проверку");
         button.addClickListener(event -> showResult());
@@ -74,30 +76,32 @@ public class CustomView extends VerticalLayout {
     }
 
     private void showResult() {
-        // Получаем доступ к данным в Grid
         DataProvider<ConditionAction, ?> dataProvider = conditionActionGrid.getDataProvider();
+        dataProvider.fetch(new Query<>()).forEach(conditionAction -> {
+            String redStyle = "color: green;"; // Задаем цвет текста
+            String blueStyle = "color: blue;"; // Задаем цвет текста
+            String orangeStyle = "color: orange;"; // Задаем цвет текста
 
-        Stream<ConditionAction> fetch = dataProvider.fetch(new Query<>());
-        // Проверяем каждое условие и устанавливаем метку соответственно
-        fetch.forEach(conditionAction -> {
-            if (conditionAction.getDescription().equals("Ковенанты по налогам")) {
-                conditionAction.getLabel().setText("Проверка пройдена");
-            } else if (conditionAction.getDescription().equals("Пакеты платежей")) {
-                conditionAction.getLabel().setText("Проверка пройдена");
-            } else if (conditionAction.getDescription().equals("Еще одна проверка")) {
-                conditionAction.getLabel().setText("Проверка пройдена");
+            switch (conditionAction.getDescription()) {
+                case "Ковенанты по налогам":
+                    conditionAction.getHtml().setHtmlContent("<span style='" + redStyle + "'>Проверка пройдена %s</span>".formatted("1") );
+                    break;
+
+                case "Пакеты платежей":
+                    conditionAction.getHtml().setHtmlContent("<span style='" + blueStyle + "'>Проверка пройдена</span>");
+                    break;
+
+                case "Еще одна проверка":
+                    conditionAction.getHtml().setHtmlContent("<span style='" + orangeStyle + "'>Проверка пройдена</span>");
+                    break;
             }
-        });
 
-        // Обновляем данные в Grid
+        });
         dataProvider.refreshAll();
     }
 
     private List<User> getUsers() {
-        List<User> users = new ArrayList<>();
-        users.add(new User("John", 18));
-        users.add(new User("Alice", 33));
-        return users;
+        return Arrays.asList(new User("John", 18), new User("Alice", 33));
     }
 
     private void showConditions(User user) {
@@ -112,51 +116,29 @@ public class CustomView extends VerticalLayout {
     private List<ConditionAction> getConditionActions(User user) {
         List<ConditionAction> conditionActions = new ArrayList<>();
         if (user.getAge() == 18) {
-            conditionActions.add(new ConditionAction("Ковенанты по налогам", new Label("")));
-            conditionActions.add(new ConditionAction("Пакеты платежей", new Label("")));
-            conditionActions.add(new ConditionAction("Еще одна проверка", new Label("")));
+
+            conditionActions.add(new ConditionAction("Ковенанты по налогам", new Html("<span style='\" + \"orange\" + \"'> </span>\"")));
+            conditionActions.add(new ConditionAction("Пакеты платежей", new Html("<span style='\" + \"orange\" + \"'> </span>\" ")));
+            conditionActions.add(new ConditionAction("Еще одна проверка", new Html("<span style='\" + \"orange\" + \"'> </span>\" ")));
         } else {
-            conditionActions.add(new ConditionAction("Ковенанты по налогам", new Label("")));
+            conditionActions.add(new ConditionAction("Ковенанты по налогам", new Html("<span style='\" + \"orange\" + \"'> </span>\" ")));
         }
         return conditionActions;
     }
+
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class User {
         private String name;
         private int age;
-
-        public User(String name, int age) {
-            this.name = name;
-            this.age = age;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public int getAge() {
-            return age;
-        }
     }
 
+    @Data
+    @AllArgsConstructor
     public static class ConditionAction {
         private String description;
-        private Label label;
-
-        public Label getLabel() {
-            return label;
-        }
-
-        public ConditionAction(String description, Label label) {
-            this.description = description;
-            this.label = label;
-        }
-
-        public ConditionAction(String description) {
-            this.description = description;
-        }
-
-        public String getDescription() {
-            return description;
-        }
+        private Html html;
     }
 }
