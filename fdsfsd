@@ -1,0 +1,35 @@
+
+    public void showResult() {
+        // Извлечение данных один раз
+        DataProvider<ConditionAction, ?> dataProvider = conditionActionGrid.getDataProvider();
+        Stream<ConditionAction> fetch = dataProvider.fetch(new Query<>());
+
+        // Сервисные вызовы выполняются один раз за пределами цикла
+        String check639Result = flService.check639(cusId);
+        String check100Result = flService.check100(cusId);
+        Integer covenant = flService.getCovenant(cusId);
+        Integer payment = flService.getPayment(cusId);
+
+        // Обработка каждого элемента потока
+        fetch.forEach(conditionAction -> {
+            String currentDescription = conditionAction.getDescription();
+            switch (currentDescription) {
+                case "Согласование услуги":
+                    if (!check639Result.equals("Д") && !check100Result.equals("Д")) {
+                        updateDescription(conditionAction, "Новое описание");
+                    }
+                    break;
+                case "Ковенанты по налогам":
+                    if (covenant <= 5) {
+                        updateDescription(conditionAction, "Новое описание для ковенанта");
+                    }
+                    break;
+                case "Платежи за месяц":
+                    if (payment > 5000) {
+                        updateDescription(conditionAction, "Новое описание для платежей");
+                    }
+                    break;
+            }
+            dataProvider.refreshAll();
+        });
+    }
