@@ -86,11 +86,11 @@ public class CustomView extends VerticalLayout {
                     break;
 
                 case PAYMENT_PACKAGES:
-                    conditionAction.setResult(new Label("<span style='" + redStyle + "'>Проверка пройдена %s</span>".formatted("1")));
+                    conditionAction.setResult(new Label("<span style='" + blueStyle + "'>Проверка пройдена %s</span>".formatted("1")));
                     break;
 
                 case ANOTHER_CHECK:
-                    conditionAction.setResult(new Label("<span style='" + redStyle + "'>Проверка пройдена %s</span>".formatted("1")));
+                    conditionAction.setResult(new Label("<span style='" + orangeStyle + "'>Проверка пройдена %s</span>".formatted("1")));
                     //conditionAction.getHtml().setContentMode(ContentMode.HTML);
                     break;
             }
