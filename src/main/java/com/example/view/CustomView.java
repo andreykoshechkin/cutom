@@ -92,7 +92,7 @@ public class CustomView extends VerticalLayout {
                     break;
 
                 case "Еще одна проверка":
-                    conditionAction.getHtml().setHtmlContent("<span style='" + orangeStyle + "'>Проверка пройдена</span>");
+                    conditionAction.getHtml().setHtmlContent("<span style='" + orangeStyle + "'>Проверка пройдена!!!</span>");
                     break;
             }
 
