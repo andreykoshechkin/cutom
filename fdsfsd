@@ -1,0 +1,69 @@
+
+    public void showResult() {
+        // Извлечение данных один раз
+        DataProvider<ConditionAction, ?> dataProvider = conditionActionGrid.getDataProvider();
+        Stream<ConditionAction> fetch = dataProvider.fetch(new Query<>());
+
+        // Сервисные вызовы выполняются один раз за пределами цикла
+        String check639Result = flService.check639(cusId);
+        String check100Result = flService.check100(cusId);
+        Integer covenant = flService.getCovenant(cusId);
+        Integer payment = flService.getPayment(cusId);
+
+        // Обработка каждого элемента потока
+        fetch.forEach(conditionAction -> {
+            String currentDescription = conditionAction.getDescription();
+            switch (currentDescription) {
+                case "Согласование услуги":
+                    if (!check639Result.equals("Д") && !check100Result.equals("Д")) {
+                        updateDescription(conditionAction, "Новое описание");
+                    }
+                    break;
+                case "Ковенанты по налогам":
+                    if (covenant <= 5) {
+                        updateDescription(conditionAction, "Новое описание для ковенанта");
+                    }
+                    break;
+                case "Платежи за месяц":
+                    if (payment > 5000) {
+                        updateDescription(conditionAction, "Новое описание для платежей");
+                    }
+                    break;
+            }
+            dataProvider.refreshAll();
+        });
+    }
+---------------------------
+
+    public void showResult() {
+        DataProvider<ConditionAction, ?> dataProvider = conditionActionGrid.getDataProvider();
+        Stream<ConditionAction> fetch = dataProvider.fetch(new Query<>());
+
+        String result638 = flService.check639(cusId);
+        String result100 = flService.check100(cusId);
+        Integer covenant = flService.getCovenant(cusId);
+        Integer payment = flService.getpayment(cusId);
+
+        fetch.forEach(item -> {
+            if (item.getDescription().equals("Согласование услуги")) {
+                if (!result638.equals("Д") && !result100.equals("Д")) {
+                    item.setDescription("Новое описание");
+                    errorList.add(item.getDescription());
+                }
+            }
+
+            if (item.getDescription().equals("Ковенанты по налогам")) {
+                if (covenant <= 5) {
+                    item.setDescription("Новое описание для ковенанта");
+                    errorList.add(item.getDescription());
+                }
+            }
+
+            if (item.getDescription().equals("Платежи за месяч")) {
+                if (covenant > 5000) {
+                    item.setDescription("Новое описание для платежей");
+                    errorList.add(item.getDescription());
+                }
+            }
+        });
+        
